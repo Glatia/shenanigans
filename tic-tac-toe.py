@@ -11,14 +11,25 @@ def drawGrid(surface, rows, width, dist):
     x = dist + x
     y = dist + y
 
-    pygame.draw.line(surface, "white", (0, y), (width, y))
-    pygame.draw.line(surface, "white", (x, 0), (x, width))
+    pygame.draw.line(surface, (56, 80, 117), (0, y), (width, y), 8)
+    pygame.draw.line(surface, (56, 80, 117), (x, 0), (x, width), 8)
 
 # Updates the window
 def updateWindow(surface):
-
+  
+  color = (145, 171, 255)
+  font = pygame.font.SysFont('Arial', 75)
   # Draws the Grid
   drawGrid(surface, rows, width, dist)
+  if drawWinner:
+    if xo == "DRAW":
+      text = font.render(xo, True, color)
+    else:
+      text = font.render(f"{xo} WINS", True, color)
+    textRect = text.get_rect()
+    textRect.center = width // 2, width // 2
+    screen.blit(text, textRect)
+    
   # Updates the Screen
   pygame.display.update()
 
@@ -29,7 +40,7 @@ def checkClick(e):
     keys = gridRows[i].keys()
     for k in keys:
       if gridRows[i][k].collidepoint(e.pos):
-        if not gridRows[i][k] in usedSquares:
+        if gridRows[i][k] not in usedSquares:
           if xo == "X":
             xo = "O"
           else:
@@ -42,8 +53,8 @@ def checkClick(e):
 # Writes either an X or an O in the grid square
 def fillSquare(surface, gridSquare):
 
-  font = pygame.font.Font('freesansbold.ttf', 50)
-  text = font.render(xo, True, "white")
+  font = pygame.font.SysFont("Arial", 100)
+  text = font.render(xo, True, (29, 52, 99))
   
   textRect = text.get_rect()
   
@@ -65,27 +76,32 @@ def updateGrid(grid, gridSquare, xo):
 
 # Checks the grid for a winner / draw
 def checkGrid(grid):
-
+  global drawWinner
   diagArray = []
 
   # Loops through the three rows and checks to see if any of them have only one value (either 3 X's or 3 O's)
   for i in range(len(grid)):
     if len(set(grid[i])) == 1 and not set(grid[i]) == {0}:
-      winner(xo)
+      drawWinner = True
+      return
 
   # Gets the same index values from each row (ie, a column)
   if len(set([i[0] for i in grid])) == 1 and not set([i[0] for i in grid]) == {0}:
-    winner(xo)
+    drawWinner = True
+    return
   if len(set([i[1] for i in grid])) == 1 and not set([i[1] for i in grid]) == {0}:
-    winner(xo)
+    drawWinner = True
+    return
   if len(set([i[2] for i in grid])) == 1 and not set([i[2] for i in grid]) == {0}:
-    winner(xo)
+    drawWinner = True
+    return
 
   # Checks the 0,0 to 3,3 diagnal, if it has only one value, it is a winner
   for i in range(len(grid)):
     diagArray.append(grid[i][i])
   if len(set(diagArray)) == 1 and not set(diagArray) == {0}:
-    winner(xo)
+    drawWinner = True
+    return
 
   # Checks the 3,0 to 0,3 diagnal
   diagArray.clear()
@@ -93,33 +109,13 @@ def checkGrid(grid):
   for i in range(len(reverseGrid)):
     diagArray.append(reverseGrid[i][i])
   if len(set(diagArray)) == 1 and not set(diagArray) == {0}:
-   winner(xo)
+    drawWinner = True
+    return
 
   # If none of those, check if there is no blank spaces left, if there is, then its a draw
-  elif 0 not in grid[0] and 0 not in grid[1] and 0 not in grid[2]:
+  if 0 not in grid[0] and 0 not in grid[1] and 0 not in grid[2]:
     winner("DRAW")
-
-# Winner
-def winner(xo):
-
-  color = "white"
-  font = pygame.font.Font('freesansbold.ttf', 75)
-  
-  if xo == "X":
-    color = "red"
-    text = font.render(f"{xo} WINS", True, color)
-    
-  elif xo == "O":
-    color = "blue"
-    text = font.render(f"{xo} WINS", True, color)
-    
-  else:
-    color = "green"
-    text = font.render(xo, True, color)
-
-  textRect = text.get_rect()
-  textRect.center = width // 2, width // 2
-  screen.blit(text, textRect)
+    return
 
 # Main
 def main():
@@ -127,7 +123,7 @@ def main():
   # Not really necessary but for some reason the fonts don't work without this
   pygame.init()
   
-  global rows, width, dist, gridRows, gridColumns, screen, grid, xo, usedSquares
+  global rows, width, dist, gridRows, gridColumns, screen, grid, xo, usedSquares, drawWinner
 
   # Where the X and O values are stored and checked
   grid = [[0, 0, 0],
@@ -135,7 +131,7 @@ def main():
           [0, 0, 0]]
 
   xo = "O"
-
+  drawWinner = False
   # Makes sure you can't click on a used square
   usedSquares = []
 
@@ -144,6 +140,7 @@ def main():
   rows = 3
   dist = width // rows
   screen = pygame.display.set_mode((width, width))
+  screen.fill((95, 136, 201))
   pygame.display.set_caption("Tic Tac Toe")
   # Row dictionary with coordinates as a key
   row1 = {'0,0': pygame.Rect(0,0,dist,dist), '1,0': pygame.Rect(dist,0,dist,dist), '2,0': pygame.Rect(2*dist,0,dist,dist)}
@@ -157,7 +154,7 @@ def main():
 
   # Gameloop
   while running:
-
+    
     pygame.time.delay(10)
     
     # Event Loop
@@ -171,7 +168,4 @@ def main():
 
     # Updates the window at the end of every loop
     updateWindow(screen)
-
-
-# Starts the program
 main()
