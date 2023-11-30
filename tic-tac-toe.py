@@ -1,51 +1,177 @@
 import pygame
 
-def drawGrid(surface):
+# Draws Grid
+def drawGrid(surface, rows, width, dist):
   x = 0
   y = 0
-  
+
+  # For every row
   for i in range(rows-1):
+    # Increase the x and y by the space between each row
     x = dist + x
     y = dist + y
 
-    pygame.draw.line(surface, "white", (x, 0), (x, width))
     pygame.draw.line(surface, "white", (0, y), (width, y))
-  
-def checkClick(e, grid, surface):
-  keys = grid.keys()
-  for k in keys:
-    if grid[k].collidepoint(e.pos):
-      drawnSquares.append(grid[k])
-      
-def updateWindow(surface):
-  surface.fill('black')
-  
-  drawGrid(surface)
-  for s in drawnSquares:
-    pygame.draw.rect(surface, "white", s)
-    
-  pygame.display.flip()
+    pygame.draw.line(surface, "white", (x, 0), (x, width))
 
+# Updates the window
+def updateWindow(surface):
+
+  # Draws the Grid
+  drawGrid(surface, rows, width, dist)
+  # Updates the Screen
+  pygame.display.update()
+
+# Checks to see which grid square was clicked
+def checkClick(e):
+  global xo
+  for i in range(len(gridRows)):
+    keys = gridRows[i].keys()
+    for k in keys:
+      if gridRows[i][k].collidepoint(e.pos):
+        if not gridRows[i][k] in usedSquares:
+          if xo == "X":
+            xo = "O"
+          else:
+            xo = "X"
+          fillSquare(screen, gridRows[i][k])
+          updateGrid(grid, k, xo)
+        else:
+          continue
+
+# Writes either an X or an O in the grid square
+def fillSquare(surface, gridSquare):
+
+  font = pygame.font.Font('freesansbold.ttf', 50)
+  text = font.render(xo, True, "white")
+  
+  textRect = text.get_rect()
+  
+  textRect.center = gridSquare.center
+  
+  surface.blit(text, textRect)
+  # Makes sure that you cannot click on a square that is already in use
+  usedSquares.append(gridSquare)
+
+# Updates the grid variable based on which square was clicked and whose turn it was
+def updateGrid(grid, gridSquare, xo):
+
+  # The grid row keys are " 'X','Y' ", so splitting on the comma gives you the x and y values
+  x = gridSquare.split(",")
+  grid[int(x[1])][int(x[0])] = xo
+
+  # Checks to see if someone won / there was a draw
+  checkGrid(grid)
+
+# Checks the grid for a winner / draw
+def checkGrid(grid):
+
+  diagArray = []
+
+  # Loops through the three rows and checks to see if any of them have only one value (either 3 X's or 3 O's)
+  for i in range(len(grid)):
+    if len(set(grid[i])) == 1 and not set(grid[i]) == {0}:
+      winner(xo)
+
+  # Gets the same index values from each row (ie, a column)
+  if len(set([i[0] for i in grid])) == 1 and not set([i[0] for i in grid]) == {0}:
+    winner(xo)
+  if len(set([i[1] for i in grid])) == 1 and not set([i[1] for i in grid]) == {0}:
+    winner(xo)
+  if len(set([i[2] for i in grid])) == 1 and not set([i[2] for i in grid]) == {0}:
+    winner(xo)
+
+  # Checks the 0,0 to 3,3 diagnal, if it has only one value, it is a winner
+  for i in range(len(grid)):
+    diagArray.append(grid[i][i])
+  if len(set(diagArray)) == 1 and not set(diagArray) == {0}:
+    winner(xo)
+
+  # Checks the 3,0 to 0,3 diagnal
+  diagArray.clear()
+  reverseGrid = grid[::-1]
+  for i in range(len(reverseGrid)):
+    diagArray.append(reverseGrid[i][i])
+  if len(set(diagArray)) == 1 and not set(diagArray) == {0}:
+   winner(xo)
+
+  # If none of those, check if there is no blank spaces left, if there is, then its a draw
+  elif 0 not in grid[0] and 0 not in grid[1] and 0 not in grid[2]:
+    winner("DRAW")
+
+# Winner
+def winner(xo):
+
+  color = "white"
+  font = pygame.font.Font('freesansbold.ttf', 75)
+  
+  if xo == "X":
+    color = "red"
+    text = font.render(f"{xo} WINS", True, color)
+    
+  elif xo == "O":
+    color = "blue"
+    text = font.render(f"{xo} WINS", True, color)
+    
+  else:
+    color = "green"
+    text = font.render(xo, True, color)
+
+  textRect = text.get_rect()
+  textRect.center = width // 2, width // 2
+  screen.blit(text, textRect)
+
+# Main
 def main():
   
-  global width, rows, dist, xo, grid, drawnSquares
+  # Not really necessary but for some reason the fonts don't work without this
+  pygame.init()
+  
+  global rows, width, dist, gridRows, gridColumns, screen, grid, xo, usedSquares
+
+  # Where the X and O values are stored and checked
+  grid = [[0, 0, 0],
+          [0, 0, 0], 
+          [0, 0, 0]]
+
+  xo = "O"
+
+  # Makes sure you can't click on a used square
+  usedSquares = []
+
+  # Screen stuff
   width = 300
   rows = 3
   dist = width // rows
-  xo = 0
-  drawnSquares = []
-  grid = dict(topLeft = pygame.Rect(0, 0, dist, dist), topMid = pygame.Rect(dist, 0, dist, dist), topRight = pygame.Rect(2 * dist, 0, dist, dist), midLeft = pygame.Rect(0, dist, dist, dist), midMid = pygame.Rect(dist, dist, dist, dist), midRight = pygame.Rect(2 * dist, dist, dist, dist), bottomLeft = pygame.Rect(0, 2 * dist, dist, dist), bottomMid = pygame.Rect(dist, 2 * dist, dist, dist), bottomRight = pygame.Rect(2 * dist, 2 * dist, dist, dist))
   screen = pygame.display.set_mode((width, width))
-  pygame.init()
+  pygame.display.set_caption("Tic Tac Toe")
+  # Row dictionary with coordinates as a key
+  row1 = {'0,0': pygame.Rect(0,0,dist,dist), '1,0': pygame.Rect(dist,0,dist,dist), '2,0': pygame.Rect(2*dist,0,dist,dist)}
+  row2 = {'0,1': pygame.Rect(0,dist,dist,dist), '1,1': pygame.Rect(dist,dist,dist,dist), '2,1': pygame.Rect(2*dist,dist,dist,dist)}
+  row3 = {'0,2': pygame.Rect(0,2*dist,dist,dist), '1,2': pygame.Rect(dist,2*dist,dist,dist), '2,2': pygame.Rect(2*dist,2*dist,dist,dist)}
+  # The three rows make up the entire grid
+  gridRows = [row1, row2, row3]
+
+  # Initialize Gameloop
   running = True
+
+  # Gameloop
   while running:
+
+    pygame.time.delay(10)
+    
+    # Event Loop
     for event in pygame.event.get():
       if event.type == pygame.QUIT:
-        pygame.quit()
+        pygame.quit() 
+      # If there is a click, check if its left click and check which square its on
       if event.type == pygame.MOUSEBUTTONDOWN:
         if event.button == 1:
-          checkClick(event, grid, screen)
-          
-      updateWindow(screen)
-    
+          checkClick(event)
+
+    # Updates the window at the end of every loop
+    updateWindow(screen)
+
+
+# Starts the program
 main()
