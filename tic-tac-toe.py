@@ -76,7 +76,7 @@ def updateGrid(grid, gridSquare, xo):
 
 # Checks the grid for a winner / draw
 def checkGrid(grid):
-  global drawWinner
+  global drawWinner, xo
   diagArray = []
 
   # Loops through the three rows and checks to see if any of them have only one value (either 3 X's or 3 O's)
@@ -114,7 +114,8 @@ def checkGrid(grid):
 
   # If none of those, check if there is no blank spaces left, if there is, then its a draw
   if 0 not in grid[0] and 0 not in grid[1] and 0 not in grid[2]:
-    winner("DRAW")
+    xo = "DRAW"
+    drawWinner = True
     return
 
 # Main
