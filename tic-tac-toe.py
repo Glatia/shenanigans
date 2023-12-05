@@ -11,21 +11,29 @@ def drawGrid(surface, rows, width, dist):
     x = dist + x
     y = dist + y
 
-    pygame.draw.line(surface, (56, 80, 117), (0, y), (width, y), 8)
-    pygame.draw.line(surface, (56, 80, 117), (x, 0), (x, width), 8)
+    pygame.draw.line(surface, (17, 15, 15, 1), (0, y), (width, y), 8)
+    pygame.draw.line(surface, (17, 15, 15, 1), (x, 0), (x, width), 8)
 
 # Updates the window
 def updateWindow(surface):
-  color = (145, 171, 255)
+  
+  color = (163, 161, 161, 1)
   font = pygame.font.SysFont('Arial', 2 * dist // 3)
+  
   # Draws the Grid
   drawGrid(surface, rows, width, dist)
   drawLine(surface, winningLine[0], winningLine[1], gridRows)
+  
   if drawWinner:
+    
     if xo == "DRAW":
-      text = font.render(xo, True, color)
+      
+     text = font.render(xo, True, color)
     else:
+      
       text = font.render(f"{xo} WINS", True, color)
+
+    
     textRect = text.get_rect()
     textRect.center = width // 2, width // 2
     screen.blit(text, textRect)
@@ -34,6 +42,7 @@ def updateWindow(surface):
   pygame.display.update()
 
 def drawLine(surface, start, end, gridRows):
+  
   if start is not None and end is not None:
     x = start.split(",")
     y = end.split(",")
@@ -41,19 +50,27 @@ def drawLine(surface, start, end, gridRows):
 
 # Checks to see which grid square was clicked
 def checkClick(e):
+
   global xo
+  
   for i in range(len(gridRows)):
     keys = gridRows[i].keys()
+    
     for k in keys:
+      
       if gridRows[i][k].collidepoint(e.pos):
+        
         if gridRows[i][k] not in usedSquares:
+          
           if xo == "X":
             xo = "O"
           else:
             xo = "X"
+            
           fillSquare(screen, gridRows[i][k])
           updateGrid(grid, k, xo)
         else:
+          
           continue
 
 # Writes either an X or an O in the grid square
@@ -65,6 +82,7 @@ def fillSquare(surface, gridSquare):
   imgRect = img.get_rect()
   imgRect = gridSquare.topleft
   surface.blit(img, imgRect)
+  
   # Makes sure that you cannot click on a square that is already in use
   usedSquares.append(gridSquare)
 
@@ -79,10 +97,12 @@ def updateGrid(grid, gridSquare, xo):
   # Checks to see if someone won / there was a draw
   checkGrid(grid)
 
+
 # Checks the grid for a winner / draw
 def checkGrid(grid):
+
+  
   global drawWinner, xo, winningLine
-  diagArray = []
 
   # Loops through the three rows and checks to see if any of them have only one value (either 3 X's or 3 O's)
   for i in range(len(grid)):
@@ -93,43 +113,23 @@ def checkGrid(grid):
       return
 
   # Gets the same index values from each row (ie, a column)
-  if len(set([i[0] for i in grid])) == 1 and set([i[0] for i in grid]) != {None}:
-    drawWinner = True
-    winningLine = ["0,0", "0,2"]
+  for x in range(len(grid[0])):
+    if len({grid[i][x] for i in range(len(grid))}) == 1 and {grid[i][x]} != {None}:
+      drawWinner = True
+      winningLine = [f"{x},0", f"{x},2"]
+      print(winningLine)
     
-    return
-  if len(set([i[1] for i in grid])) == 1 and set([i[1] for i in grid]) != {None}:
-    drawWinner = True
-    winningLine = ["1,0", "1,2"]
+      return
 
-    return
-  if len(set([i[2] for i in grid])) == 1 and set([i[2] for i in grid]) != {None}:
-    drawWinner = True
-    winningLine = ["2,0", "2,2"]
-    
-    return
-
-  # Checks the 0,0 to 2,2 diagnal, if it has only one value, it is a winner
-  for i in range(len(grid)):
-    diagArray.append(grid[i][i])
-  if len(set(diagArray)) == 1 and set(diagArray) != {None}:
-    drawWinner = True
-    winningLine = ["0,0", "2,2"]
-   
-    print(winningLine)
-    return
-
-  # Checks the 2,0 to 0,2 diagnal
-  diagArray.clear()
+  # Checks the 2,0 to 0,2 diagnal by reversing grid and using the same algorithm
   reverseGrid = grid[::-1]
-  for i in range(len(reverseGrid)):
-    diagArray.append(reverseGrid[i][i])
-  if len(set(diagArray)) == 1 and set(diagArray) != {None}:
-    winningLine = ["2,0", "0,2"]
+  if len({reverseGrid[i][i] for i in range(len(reverseGrid))}) == 1 and {reverseGrid[i][i] for i in range(len(reverseGrid))} != {None}:
     drawWinner = True
+    winningLine = ["2,0", "0,2"]
+    print(winningLine)
     
     return
-
+    
   # If none of those, check if there is no blank spaces left, if there is, then its a draw
   gridCheck = 0
   for i in grid:
@@ -139,6 +139,7 @@ def checkGrid(grid):
     if gridCheck == 3:
       xo = "DRAW"
       drawWinner = True
+      
       return
 
 # Main
@@ -160,11 +161,11 @@ def main():
   usedSquares = []
 
   # Screen stuff
-  width = 450
+  width = 369
   rows = 3
   dist = width // rows
   screen = pygame.display.set_mode((width, width))
-  screen.fill((95, 136, 201))
+  screen.fill((246, 23, 23, 1))
   pygame.display.set_caption("Tic Tac Toe")
   # Row dictionary with coordinates as a key
   row1 = {'0,0': pygame.Rect(0,0,dist,dist), '1,0': pygame.Rect(dist,0,dist,dist), '2,0': pygame.Rect(2*dist,0,dist,dist)}
@@ -183,12 +184,17 @@ def main():
     
     # Event Loop
     for event in pygame.event.get():
+      
       if event.type == pygame.QUIT:
+        
         pygame.quit() 
       # If there is a click, check if its left click and check which square its on
       if event.type == pygame.MOUSEBUTTONDOWN:
-        if event.button == 1:
-          checkClick(event)
+        
+        if drawWinner == False:
+          
+          if event.button == 1:
+            checkClick(event)
 
       # Restart when R is pressed
       keys = pygame.key.get_pressed()
