@@ -121,8 +121,17 @@ def checkGrid(grid):
     
       return
 
-  # Checks the 2,0 to 0,2 diagnal by reversing grid and using the same algorithm
+  # Checks the 0,0 to 2,2 diagonal
+  if len({grid[i][i] for i in range(len(grid))}) == 1 and {grid[i][i] for i in range(len(grid))} != {None}:
+    drawWinner = True
+    winningLine = ["0,0", "2,2"]
+    print(winningLine)
+
+    return
+    
+  # Checks the 2,0 to 0,2 diagonal by reversing grid and using the same algorithm
   reverseGrid = grid[::-1]
+  
   if len({reverseGrid[i][i] for i in range(len(reverseGrid))}) == 1 and {reverseGrid[i][i] for i in range(len(reverseGrid))} != {None}:
     drawWinner = True
     winningLine = ["2,0", "0,2"]
