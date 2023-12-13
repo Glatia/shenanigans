@@ -17,8 +17,8 @@ def drawGrid(surface, rows, width, dist):
 # Updates the window
 def updateWindow(surface):
   
-  color = (163, 161, 161, 1)
-  font = pygame.font.SysFont('Arial', 2 * dist // 3)
+  color = (60, 60, 60)
+  font = pygame.font.Font('ComicSansMS3.ttf', dist//2)
   
   # Draws the Grid
   drawGrid(surface, rows, width, dist)
@@ -46,8 +46,11 @@ def drawLine(surface, start, end, gridRows):
   if start is not None and end is not None:
     x = start.split(",")
     y = end.split(",")
-    pygame.draw.line(surface, "black", (gridRows[int(x[1])].get(start).center), (gridRows[int(y[1])].get(end).center), 10)
-
+    
+    pygame.draw.line(surface, "black", (gridRows[int(x[1])].get(start).center), (gridRows[int(y[1])].get(end).center), 20)
+    # Draws circles at the ends of the line to make the line rounded
+    pygame.draw.circle(surface, "black", (gridRows[int(x[1])].get(start).center), 10)
+    pygame.draw.circle(surface, "black", (gridRows[int(y[1])].get(end).center), 10)
 # Checks to see which grid square was clicked
 def checkClick(e):
 
@@ -76,12 +79,14 @@ def checkClick(e):
 # Writes either an X or an O in the grid square
 def fillSquare(surface, gridSquare):
 
-  img = pygame.image.load(f"{xo}.png")
-  img = pygame.transform.scale(img, (dist, dist))
+  font = pygame.font.Font("ComicSansMS3.ttf", 9 * dist // 10)
+  text = font.render(xo, True, (0, 0, 0, 1))
+  
+  textRect = text.get_rect()
+  
+  textRect.center = gridSquare.center
 
-  imgRect = img.get_rect()
-  imgRect = gridSquare.topleft
-  surface.blit(img, imgRect)
+  surface.blit(text, textRect)
   
   # Makes sure that you cannot click on a square that is already in use
   usedSquares.append(gridSquare)
@@ -114,7 +119,7 @@ def checkGrid(grid):
 
   # Gets the same index values from each row (ie, a column)
   for x in range(len(grid[0])):
-    if len({grid[i][x] for i in range(len(grid))}) == 1 and {grid[i][x]} != {None}:
+    if len({grid[i][x] for i in range(len(grid))}) == 1 and {grid[i][x] for i in range(len(grid))} != {None}:
       drawWinner = True
       winningLine = [f"{x},0", f"{x},2"]
       print(winningLine)
@@ -174,14 +179,17 @@ def main():
   rows = 3
   dist = width // rows
   screen = pygame.display.set_mode((width, width))
-  screen.fill((246, 23, 23, 1))
+  screen.fill((105, 195, 209))
   pygame.display.set_caption("Tic Tac Toe")
+  
   # Row dictionary with coordinates as a key
   row1 = {'0,0': pygame.Rect(0,0,dist,dist), '1,0': pygame.Rect(dist,0,dist,dist), '2,0': pygame.Rect(2*dist,0,dist,dist)}
   row2 = {'0,1': pygame.Rect(0,dist,dist,dist), '1,1': pygame.Rect(dist,dist,dist,dist), '2,1': pygame.Rect(2*dist,dist,dist,dist)}
   row3 = {'0,2': pygame.Rect(0,2*dist,dist,dist), '1,2': pygame.Rect(dist,2*dist,dist,dist), '2,2': pygame.Rect(2*dist,2*dist,dist,dist)}
+  
   # The three rows make up the entire grid
   gridRows = [row1, row2, row3]
+  
   # Creates an empty line
   winningLine = [None, None]
   
@@ -197,6 +205,7 @@ def main():
       if event.type == pygame.QUIT:
         
         pygame.quit() 
+        
       # If there is a click, check if its left click and check which square its on
       if event.type == pygame.MOUSEBUTTONDOWN:
         
