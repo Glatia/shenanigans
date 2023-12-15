@@ -1,4 +1,5 @@
 import pygame
+import random
 
 pygame.init()
 
@@ -12,8 +13,6 @@ ballSize = 15
 font = pygame.font.Font("pong/Pixel.ttf", width // 10)
 
 screen = pygame.display.set_mode((width, width))
-
-screen.fill("black")
 
 class Players(pygame.sprite.Sprite):
 
@@ -38,13 +37,13 @@ class Ball(pygame.sprite.Sprite):
   def __init__(self, x, y):
     
     self.pos = pygame.Rect(x - ballSize, y - ballSize, ballSize, ballSize)
-    self.vel = pygame.math.Vector2((5, 5))
+    self.vel = pygame.math.Vector2((-5, 5))
     self.ballSize = ballSize
 
-  def move(self):
+  def move(self, multi):
         
-    self.pos.x += int(self.vel[0])
-    self.pos.y += int(self.vel[1])
+    self.pos.x += int(self.vel[0]) * multi
+    self.pos.y += int(self.vel[1]) * multi
 
   def update(self, players, width, surface):
     
@@ -57,9 +56,9 @@ class Ball(pygame.sprite.Sprite):
       self.vel.y = -self.vel.y
       
     if self.pos.x < 0:
-      win("Player 1", surface)
-    elif self.pos.x > width - self.ballSize:
       win("Player 2", surface)
+    elif self.pos.x > width - self.ballSize:
+      win("Player 1", surface)
 
   def draw(self, surface):
 
@@ -75,33 +74,64 @@ def win(who, surface):
 
 
 def main():
-  settings = {"Difficulty" : "", "Mode" : ""}
   menu = True
-  
+  multi = 1
   pygame.init()
 
-  player1 = Players(0, width // 2)
-  player2 = Players(width - paddleWidth, width // 2)
+  player1 = Players(10, width // 2)
+  player2 = Players(width - paddleWidth - 10, width // 2)
   players = [player1, player2]
   ball = Ball(width//2, 0 + ballSize)
 
   menubtns = {"Hard" : pygame.Rect(width // 9, width // 5, 100, 50), "Medium" : pygame.Rect(width // 9, 2 * width // 5, 100, 50), "Easy" : pygame.Rect(width // 9, 3 * width // 5, 100, 50)}
+  btnSelect = 0
   
   clock = pygame.time.Clock()
   
   running = True
   
   while running:
-    
-    clock.tick(30)
+    clock.tick(25)
     screen.fill("black")
-    for e in pygame.event.get():
-      if e.type == pygame.QUIT:
-        running = False
         
-    if not menu:
-      
-  
+    if menu:
+          
+      font2 = pygame.font.Font("pong/Pixel.ttf", 20)
+      for key,btn in menubtns.items():
+        if btn == list(menubtns.values())[btnSelect]:
+          pygame.draw.rect(screen, "yellow", btn, 2, 9)
+          text = font2.render(key, True, "yellow")
+        else:
+          pygame.draw.rect(screen, "white", btn, 2, 9)
+          text = font2.render(key, True, "White")
+
+
+        textRect = text.get_rect()
+        textRect.center = btn.center
+
+        screen.blit(text, textRect)
+
+      for e in pygame.event.get():
+        if e.type == pygame.KEYDOWN:
+          if e.key == pygame.K_UP:
+            btnSelect -= 1
+          if e.key == pygame.K_DOWN:
+            btnSelect += 1
+          elif e.key == pygame.K_RETURN:
+            if btnSelect == 0:
+              multi = 1.25
+            if btnSelect == 1:
+              multi = 1
+            if btnSelect == 2:
+              multi = 0.75
+            menu = False
+          btnSelect %= 3
+        elif e.type == pygame.QUIT:
+          running = False
+
+    
+    elif not menu:
+    
       keys = pygame.key.get_pressed()
       if keys[pygame.K_UP] or keys[pygame.K_DOWN]:
         player2.move(keys[pygame.K_UP], keys[pygame.K_DOWN])
@@ -115,27 +145,17 @@ def main():
       pygame.draw.line(screen, "gray", (width // 2, 0), (width // 2, width), 5)
   
       ball.update(players, width, screen)
-      ball.move()
+      ball.move(multi)
       ball.draw(screen)
       player1.draw(screen)
       player2.draw(screen)
-      
-    elif menu:
-      
-      keys = pygame.key.get_pressed()
-      if keys[pygame.K_SPACE]:
-        menu = False
-      for key,btn in menubtns.items():
-        pygame.draw.rect(screen, "gray", btn, 2, 9)
-        font2 = pygame.font.Font("pong/Pixel.ttf", 20)
-        text = font2.render(key, True, "White")
-        textRect = text.get_rect()
-        textRect.center = btn.center
+
+      for e in pygame.event.get():
+        if e.type == pygame.QUIT:
+          running = False
         
-        screen.blit(text, textRect)
-      
     pygame.display.flip()
-
+    
+  pygame.quit()
+  
 main()
-
-pygame.quit()
