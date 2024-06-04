@@ -1,0 +1,10 @@
+{
+    "Walter White": {
+        "balance": 25000,
+        "password": "Password!"
+    },
+    "Mike Ehrmantraut": {
+        "balance": 50000,
+        "password": "Password!"
+    }
+}
